@@ -4,6 +4,7 @@
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError, UserError
 from odoo.tools.safe_eval import safe_eval
+from ast import literal_eval
 
 
 class TierValidation(models.AbstractModel):
@@ -93,13 +94,9 @@ class TierValidation(models.AbstractModel):
 
     @api.multi
     def evaluate_tier(self, tier):
-        try:
-            res = safe_eval(tier.python_code, globals_dict={'rec': self})
-        except Exception as error:
-            raise UserError(_(
-                "Error evaluating tier validation conditions.\n %s") % error)
-        return res
-
+        domain = literal_eval(tier.definition_domain)
+        return self.search([('id', '=', self.id)] + domain)
+                
     @api.model
     def _get_under_validation_exceptions(self):
         """Extend for more field exceptions."""
@@ -151,6 +148,7 @@ class TierValidation(models.AbstractModel):
             'status': 'approved',
             'done_by': self.env.user.id,
         })
+        # TODO: add message_post
 
     @api.multi
     def validate_tier(self):
@@ -168,6 +166,7 @@ class TierValidation(models.AbstractModel):
                 'status': 'rejected',
                 'done_by': self.env.user.id,
             })
+            # TODO: Add Message_post
 
     @api.multi
     def request_validation(self):
@@ -189,7 +188,6 @@ class TierValidation(models.AbstractModel):
                                 'sequence': sequence,
                                 'requested_by': self.env.uid,
                             })
-                    # TODO: notify? post some msg in chatter?
         return created_trs
 
     @api.multi

@@ -51,10 +51,9 @@
                         </group>
                     </group>
                     <group col="4" name="bottom">
-                        <field name="python_code" colspan="4"/>
-                        <field name="reviewer_expression" colspan="4"
-                               attrs="{'invisible': [('review_type', '!=', 'expression')]}"/>
-                    </group>
+			<field name="definition_type"/>
+			<field name="definition_domain" attrs="{'invisible': [('definition_type', '!=', 'domain')]}"/>
+		    </group>
                 </sheet>
             </form>
         </field>

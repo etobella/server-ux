@@ -54,7 +54,7 @@ class TierTierValidation(common.SavepointCase):
             'model_id': cls.tester_model.id,
             'review_type': 'individual',
             'reviewer_id': cls.test_user_1.id,
-            'python_code': 'rec.test_field > 1.0',
+            'definition_domain': "[('test_field', '>', 1.0)]",
         })
 
         cls.test_record = cls.test_model.create({
@@ -134,64 +134,9 @@ class TierTierValidation(common.SavepointCase):
             [('validated', '=', False)])
         self.assertTrue(res)
 
-    def test_09_wrong_tier_definition(self):
-        """Error should raise with incorrect python expresions on
-        tier definitions."""
-        self.tier_def_obj.create({
-            'model_id': self.tester_model.id,
-            'review_type': 'individual',
-            'reviewer_id': self.test_user_1.id,
-            'python_code': 'rec.not_existing_field > 1.0',
-        })
-        with self.assertRaises(UserError):
-            self.test_record.sudo(self.test_user_1.id).action_confirm()
-
-    def test_10_dummy_tier_definition(self):
+    def test_09_dummy_tier_definition(self):
         """Test tier.definition methods."""
         res = self.tier_def_obj._get_tier_validation_model_names()
         self.assertEqual(res, [])
         res = self.tier_def_obj.onchange_model_id()
         self.assertTrue(res)
-
-    def test_11_reviewer_from_python_expression(self):
-        tier_definition = self.tier_def_obj.create({
-            'model_id': self.tester_model.id,
-            'review_type': 'individual',
-            'reviewer_id': self.test_user_1.id,
-            'python_code': 'rec.test_field > 1.0',
-        })
-        tier_definition.write({
-            'model_id': self.tester_model.id,
-            'review_type': 'expression',
-            'python_code': 'rec.test_field > 3.0',
-        })
-        tier_definition.onchange_review_type()
-        tier_definition.write({
-            'reviewer_expression': 'rec.user_id',
-        })
-        self.test_record.write({
-            'test_field': 3.5,
-            'user_id': self.test_user_2.id,
-        })
-        reviews = self.test_record.sudo(
-            self.test_user_3.id).request_validation()
-        self.assertTrue(reviews)
-        self.assertEqual(len(reviews), 2)
-        record = self.test_record.sudo(self.test_user_1.id)
-        self.assertIn(self.test_user_1, record.reviewer_ids)
-        self.assertIn(self.test_user_2, record.reviewer_ids)
-        res = self.test_model.search(
-            [('reviewer_ids', 'in', self.test_user_2.id)])
-        self.assertTrue(res)
-
-    def test_12_wrong_reviewer_expression(self):
-        """Error should raise with incorrect python expresions on
-                tier definitions."""
-        self.tier_def_obj.create({
-            'model_id': self.tester_model.id,
-            'review_type': 'expression',
-            'reviewer_expression': 'rec.test_field',
-            'python_code': 'rec.test_field > 1.0',
-        })
-        with self.assertRaises(UserError):
-            self.test_record.sudo(self.test_user_3.id).request_validation()

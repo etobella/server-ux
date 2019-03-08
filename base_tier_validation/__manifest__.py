@@ -13,7 +13,7 @@
     "application": False,
     "installable": True,
     "depends": [
-        "base",
+        "web",
     ],
     "data": [
         "security/ir.model.access.csv",

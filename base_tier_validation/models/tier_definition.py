@@ -28,9 +28,10 @@ class TierDefinition(models.Model):
     )
     review_type = fields.Selection(
         string="Validated by", default="individual",
-        selection=[("individual", "Specific user"),
-                   ("group", "Any user in a specific group."),
-                   ("expression", "Python Expression")]
+        selection=[
+            ("individual", "Specific user"),
+            ("group", "Any user in a specific group."),
+        ]
     )
     reviewer_id = fields.Many2one(
         comodel_name="res.users", string="Reviewer",
@@ -38,21 +39,14 @@ class TierDefinition(models.Model):
     reviewer_group_id = fields.Many2one(
         comodel_name="res.groups", string="Reviewer group",
     )
-    python_code = fields.Text(
-        string='Tier Definition Expression',
-        help="Write Python code that defines when this tier confirmation "
-             "will be needed. The result of executing the expresion must be "
-             "a boolean.",
-        default="""# Available locals:\n#  - rec: current record""",
+    definition_type = fields.Selection(
+        string="Definition",
+        selection=[
+            ('domain', 'Domain'),
+        ],
+        default='domain',
     )
-    reviewer_expression = fields.Text(
-        string='Review Expression',
-        help="Write Python code that defines the reviewer. "
-             "The result of executing the expression must be a res.users "
-             "recordset.",
-        default="# Available locals:\n#  - rec: current record\n"
-                "#  - Expects a recordset of res.users",
-    )
+    definition_domain = fields.Text()
     active = fields.Boolean(default=True)
     sequence = fields.Integer(default=30)
     company_id = fields.Many2one(
@@ -71,6 +65,3 @@ class TierDefinition(models.Model):
     def onchange_review_type(self):
         self.reviewer_id = None
         self.reviewer_group_id = None
-        self.reviewer_expression = "# Available locals:\n" \
-                                   "#  - rec: current record\n"\
-                                   "#  - Expects a recordset of res.users"
