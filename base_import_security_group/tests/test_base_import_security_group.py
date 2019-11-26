@@ -6,6 +6,8 @@ from odoo.tests import common
 from odoo.tools import mute_logger
 
 
+@common.at_install(False)
+@common.post_install(True)
 class TestImportSecurityGroup(common.HttpCase):
     def setUp(self):
         super().setUp()
