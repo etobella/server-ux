@@ -60,6 +60,14 @@ class TestImportSecurityGroup(common.HttpCase):
             res['messages'][1]['message'],
             "Missing required value for the field 'Object' (model_id)")
 
+        # We grant temporary write access to users. This is necessary
+        # Because the call to phantom_js when the auth_signup module
+        # is installed calls to the computation of the field
+        # 'signup_url' of res.partner, which results in error because we
+        # don't have specific permissions to write this fields.
+        user_access = self.env.ref('base.access_res_users_all')
+        user_access.perm_write = True
+
         self.has_button_import(falsify=True, user=self.user_test)
         res2 = self.Access.sudo(self.user_test).load(fields, data)
 
