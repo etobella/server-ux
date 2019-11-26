@@ -12,6 +12,7 @@
     'depends': [
         'web',
         'barcode_action',
+        'mail',
     ],
     'data': [
         'security/ir.model.access.csv',
